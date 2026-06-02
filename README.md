@@ -2,15 +2,14 @@
 
 # ✂️ BarberOS
 
-**Plataforma open source para gestión de barberías**
+**Plataforma SaaS para gestión de barberías modernas**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Status](https://img.shields.io/badge/Status-En%20desarrollo-orange)](https://github.com/marcovsolis/barber-os)
 
-[Demo](#) · [Documentación](#documentación) · [Reportar un bug](https://github.com/marcovsolis/barber-os/issues) · [Solicitar función](https://github.com/marcovsolis/barber-os/issues)
+[Demo](#) · [Reportar un bug](https://github.com/marcovsolis/barber-os/issues) · [Solicitar función](https://github.com/marcovsolis/barber-os/issues)
 
 </div>
 
@@ -18,94 +17,19 @@
 
 ## ¿Qué es BarberOS?
 
-BarberOS es una plataforma SaaS **gratuita y de código abierto** para gestionar barberías pequeñas y medianas. Permite agendar citas, llevar el control de pagos e inventario, y comunicarse con clientes directamente por WhatsApp, todo desde un panel amigable y accesible desde cualquier dispositivo.
+BarberOS es una plataforma SaaS para gestionar barberías pequeñas y medianas. Permite agendar citas, llevar el control de pagos e inventario, y comunicarse con clientes directamente por WhatsApp, todo desde un panel moderno y accesible desde cualquier dispositivo.
+
+> **Nota:** El código fuente está disponible para revisión en este repositorio. Todos los derechos reservados — no está permitido el uso, copia ni distribución sin autorización expresa.
 
 ### ✨ Funcionalidades principales
 
-- **📅 Agenda de citas** — Calendario visual, reservas online, recordatorios automáticos
-- **💰 Control de pagos** — Registro de cobros, caja del día, comisiones por barbero
-- **💬 Integración WhatsApp** — Bot para agendar, confirmaciones y recordatorios automáticos
-- **📦 Inventario y gastos** — Control de stock, alertas de mínimos, reporte de rentabilidad
-
----
-
-## 🚀 Inicio rápido
-
-### Requisitos previos
-
-- [Node.js](https://nodejs.org) 18 o superior
-- [Supabase CLI](https://supabase.com/docs/guides/cli)
-- Cuenta en [Supabase](https://supabase.com) (tier gratuito es suficiente para empezar)
-- *(Opcional)* Cuenta en [360dialog](https://www.360dialog.com) para WhatsApp
-
-### Instalación
-
-```bash
-# 1. Clona el repositorio
-git clone https://github.com/marcovsolis/barber-os.git
-cd barber-os
-
-# 2. Instala las dependencias
-npm install
-
-# 3. Configura las variables de entorno
-cp .env.example .env.local
-# Edita .env.local con tus credenciales de Supabase
-
-# 4. Aplica las migraciones de la base de datos
-supabase db push
-
-# 5. Inicia el servidor de desarrollo
-npm run dev
-```
-
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
----
-
-## 📁 Estructura del proyecto
-
-```
-barber-os/
-├── src/
-│   ├── app/                    # Rutas de Next.js (App Router)
-│   │   ├── (auth)/             # Páginas de login y registro
-│   │   ├── (dashboard)/        # Panel de administración
-│   │   └── book/[shopSlug]/    # Página pública de reserva del cliente
-│   ├── components/
-│   │   ├── ui/                 # Componentes base (Button, Card, Badge…)
-│   │   ├── appointments/       # Componentes de citas
-│   │   ├── payments/           # Componentes de pagos
-│   │   ├── inventory/          # Componentes de inventario
-│   │   └── layout/             # Sidebar, Header, navegación
-│   ├── hooks/                  # React hooks personalizados
-│   ├── lib/
-│   │   ├── supabase/           # Clientes de Supabase (client/server)
-│   │   └── whatsapp.ts         # Integración con WhatsApp API
-│   └── types/                  # Tipos TypeScript globales
-├── supabase/
-│   └── migrations/             # Esquema de la base de datos
-└── docs/                       # Documentación adicional
-```
-
----
-
-## 🗄️ Base de datos
-
-El esquema incluye las siguientes tablas principales:
-
-| Tabla | Descripción |
-|---|---|
-| `shops` | Barberías registradas en la plataforma |
-| `barbers` | Barberos con sus horarios y configuraciones |
-| `clients` | Clientes con historial y notas |
-| `services` | Catálogo de servicios y precios |
-| `appointments` | Citas con estado, barbero y servicio |
-| `payments` | Registro de pagos por cita |
-| `inventory_items` | Productos del inventario |
-| `expenses` | Gastos operativos del negocio |
-
-Consulta [`supabase/migrations/`](supabase/migrations/) para ver el esquema completo.
+- **📅 Agenda de citas** — Calendario visual, reservas online y recordatorios automáticos
+- **💰 Control de pagos** — Registro de cobros, comisiones por barbero y exportación a Excel
+- **💬 Integración WhatsApp** — Confirmaciones automáticas y recordatorios 24h/30min antes
+- **📦 Inventario** — Control de stock en tiempo real con alertas de mínimos
+- **👥 CRM de clientes** — Historial de visitas, gasto total y notas privadas
+- **🔧 Multi-barbero** — Horarios, colores y comisiones individuales por barbero
+- **🌐 Página pública de reservas** — URL personalizada para que los clientes agenden solos
 
 ---
 
@@ -114,69 +38,91 @@ Consulta [`supabase/migrations/`](supabase/migrations/) para ver el esquema comp
 | Capa | Tecnología |
 |---|---|
 | Frontend | [Next.js 15](https://nextjs.org) + [Tailwind CSS](https://tailwindcss.com) |
-| Backend / BaaS | [Supabase](https://supabase.com) (PostgreSQL + Auth + Storage + Realtime) |
-| Estado global | [Zustand](https://zustand-demo.pmnd.rs) |
+| Backend / BaaS | [Supabase](https://supabase.com) (PostgreSQL + Auth + Storage) |
 | Formularios | [React Hook Form](https://react-hook-form.com) + [Zod](https://zod.dev) |
-| Fetching | [TanStack Query](https://tanstack.com/query) |
-| WhatsApp | [360dialog API](https://www.360dialog.com) / [Twilio](https://twilio.com) |
+| WhatsApp | [360dialog API](https://www.360dialog.com) |
 | Iconos | [Lucide React](https://lucide.dev) |
 | Lenguaje | TypeScript estricto |
 
 ---
 
+## 📁 Estructura del proyecto
+
+```
+barber-os/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/             # Login y registro
+│   │   ├── (dashboard)/        # Panel de administración
+│   │   ├── admin/              # Super admin
+│   │   ├── book/[shopSlug]/    # Página pública de reservas
+│   │   └── api/                # API routes (cron, export, whatsapp)
+│   ├── components/
+│   │   ├── ui/                 # Button, Card, Badge, Tooltip…
+│   │   ├── appointments/       # Citas y calendario
+│   │   ├── clients/            # Gestión de clientes
+│   │   ├── payments/           # Cobros y reportes
+│   │   ├── inventory/          # Control de stock
+│   │   ├── settings/           # Configuración de la barbería
+│   │   └── layout/             # Sidebar y navegación
+│   ├── lib/
+│   │   ├── supabase/           # Clientes (client/server/admin)
+│   │   ├── slots.ts            # Generación de horarios disponibles
+│   │   └── whatsapp.ts         # Integración WhatsApp API
+│   └── types/                  # Tipos TypeScript globales
+└── supabase/
+    └── migrations/             # Esquema completo de la base de datos
+```
+
+---
+
+## 🗄️ Base de datos
+
+| Tabla | Descripción |
+|---|---|
+| `shops` | Barberías registradas en la plataforma |
+| `profiles` | Usuarios extendidos con rol y shop asociado |
+| `barbers` | Barberos con horarios y configuraciones |
+| `barber_schedules` | Horarios de trabajo por día de la semana |
+| `barber_blocks` | Bloqueos de horario (vacaciones, descansos) |
+| `clients` | Clientes con historial y notas |
+| `services` | Catálogo de servicios y precios |
+| `appointments` | Citas con estado, barbero y servicio |
+| `payments` | Registro de cobros por cita |
+| `appointment_reminders` | Recordatorios enviados por WhatsApp |
+| `inventory_items` | Productos del inventario |
+
+---
+
 ## 🌍 Hoja de ruta
 
-- [x] Scaffold inicial del proyecto
-- [ ] **Fase 1 — MVP**
-  - [ ] Módulo de citas y calendario
-  - [ ] Módulo de pagos y caja
-  - [ ] Integración WhatsApp (confirmaciones y recordatorios)
-  - [ ] Inventario básico
-- [ ] **Fase 2 — Consolidación**
-  - [ ] CRM básico de clientes
-  - [ ] Reportes y analítica
-  - [ ] Bot de WhatsApp para agendar
-  - [ ] Comisiones por barbero
-- [ ] **Fase 3 — Crecimiento**
-  - [ ] Sistema de fidelización
-  - [ ] Campañas de marketing
-  - [ ] Página pública con SEO
-- [ ] **Fase 4 — Escalabilidad**
-  - [ ] Multi-sucursal
-  - [ ] API pública
-  - [ ] App móvil (React Native)
-
----
-
-## 🤝 Contribuir
-
-¡Las contribuciones son bienvenidas! Lee la [guía de contribución](CONTRIBUTING.md) para saber cómo empezar.
-
-En resumen:
-1. Haz un fork del proyecto
-2. Crea tu rama: `git checkout -b feature/nueva-funcionalidad`
-3. Haz commit: `git commit -m 'feat: agrega nueva funcionalidad'`
-4. Haz push: `git push origin feature/nueva-funcionalidad`
-5. Abre un Pull Request
-
----
-
-## 📚 Documentación
-
-- [Configuración de WhatsApp](docs/whatsapp-setup.md)
-- [Arquitectura del sistema](docs/architecture.md)
-- [Plan completo del producto](Plan_BarberOS.md)
+- [x] Autenticación y onboarding
+- [x] Módulo de citas y calendario
+- [x] Módulo de pagos y comisiones
+- [x] Integración WhatsApp (confirmaciones y recordatorios)
+- [x] Inventario con alertas de stock
+- [x] CRM de clientes
+- [x] Página pública de reservas
+- [x] Panel super admin
+- [x] Exportación a Excel
+- [ ] Bot de WhatsApp para agendar
+- [ ] Reportes avanzados y analítica
+- [ ] Sistema de fidelización
+- [ ] Multi-sucursal
+- [ ] App móvil
 
 ---
 
 ## 📄 Licencia
 
-Distribuido bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más información.
+Copyright © 2026 BarberOS. Todos los derechos reservados.
+
+El código fuente está disponible para revisión en este repositorio. No está permitido el uso, copia, modificación ni distribución sin autorización expresa del autor.
 
 ---
 
 <div align="center">
 
-Hecho con ❤️ para la comunidad de barberías hispanohablantes
+Hecho con ❤️ para barberías modernas
 
 </div>
