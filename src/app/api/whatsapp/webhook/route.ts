@@ -1,10 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendTextMessage } from '@/lib/whatsapp'
+import crypto from 'crypto'
 
-/**
- * GET — WhatsApp webhook verification (required by Meta)
- */
+// ── Signature verification ─────────────────────────────────────
+// Meta signs every POST with HMAC-SHA256 using the app secret.
+// We MUST verify this before trusting any payload.
+
+async function verifySignature(req: NextRequest, rawBody: string): Promise<boolean> {
+  const appSecret = process.env.WHATSAPP_APP_SECRET
+  if (!appSecret) {
+    // If secret is not configured, reject all requests — fail secure
+    console.error('[webhook] WHATSAPP_APP_SECRET not set — rejecting request')
+    return false
+  }
+
+  const signature = req.headers.get('x-hub-signature-256') ?? ''
+  if (!signature.startsWith('sha256=')) return false
+
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', appSecret)
+    .update(rawBody, 'utf8')
+    .digest('hex')
+
+  // Constant-time comparison to prevent timing attacks
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expected)
+    )
+  } catch {
+    return false
+  }
+}
+
+// ── GET — WhatsApp webhook verification (required by Meta) ────
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const mode      = searchParams.get('hub.mode')
@@ -18,15 +49,23 @@ export async function GET(req: NextRequest) {
   return new NextResponse('Forbidden', { status: 403 })
 }
 
-/**
- * POST — Receive incoming WhatsApp messages
- */
-export async function POST(req: NextRequest) {
-  const body = await req.json()
+// ── POST — Receive incoming WhatsApp messages ─────────────────
 
+export async function POST(req: NextRequest) {
   try {
-    const entry   = body?.entry?.[0]
-    const change  = entry?.changes?.[0]
+    // Read raw body first (needed for signature check)
+    const rawBody = await req.text()
+
+    // Verify signature before ANY processing
+    const valid = await verifySignature(req, rawBody)
+    if (!valid) {
+      console.warn('[webhook] Invalid signature — request rejected')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body   = JSON.parse(rawBody)
+    const entry  = body?.entry?.[0]
+    const change = entry?.changes?.[0]
     const message = change?.value?.messages?.[0]
 
     if (!message) {
@@ -36,13 +75,11 @@ export async function POST(req: NextRequest) {
     const from = message.from as string
     const text = (message.text?.body as string ?? '').toLowerCase().trim()
 
-    // Basic intent detection
     if (text.includes('agendar') || text.includes('cita') || text.includes('turno')) {
       await handleBookingIntent(from)
     } else if (text === 'cancelar') {
       await handleCancelIntent(from)
     } else {
-      // Default greeting
       await sendTextMessage({
         to: from,
         text:
@@ -60,25 +97,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ── Intent handlers ───────────────────────────────────────────
+
 async function handleBookingIntent(phone: string) {
-  // TODO: Implement full booking flow (multi-step conversation state)
   await sendTextMessage({
     to: phone,
     text:
       '✂️ ¡Con gusto te ayudo a agendar!\n\n' +
       'Por favor visita nuestro portal para elegir barbero, servicio y horario:\n' +
-      `${process.env.NEXT_PUBLIC_APP_URL}/book/mi-barberia\n\n` +
+      `${process.env.NEXT_PUBLIC_APP_URL}/book\n\n` +
       '¿Necesitas más ayuda? Escríbenos aquí.',
   })
 }
 
 async function handleCancelIntent(phone: string) {
-  const supabase = await createClient()
+  // Use admin client for server-side operations (no user session in webhook)
+  const admin = createAdminClient()
 
-  // Find most recent upcoming appointment for this phone
-  const { data: appointment } = await supabase
+  const { data: appointment } = await admin
     .from('appointments')
-    .select('id, starts_at, service_name, barber:barbers(name)')
+    .select('id, starts_at, service_name, shop_id')
     .eq('client_phone', phone)
     .in('status', ['pending', 'confirmed'])
     .gte('starts_at', new Date().toISOString())
@@ -94,8 +132,7 @@ async function handleCancelIntent(phone: string) {
     return
   }
 
-  // Cancel the appointment
-  await supabase
+  await admin
     .from('appointments')
     .update({ status: 'cancelled' })
     .eq('id', appointment.id)
@@ -104,6 +141,6 @@ async function handleCancelIntent(phone: string) {
     to: phone,
     text:
       `❌ Tu cita de *${appointment.service_name}* fue cancelada.\n\n` +
-      `¿Quieres reagendar? Escribe AGENDAR o visita nuestro portal.`,
+      `¿Quieres reagendar? Escribe AGENDAR.`,
   })
 }

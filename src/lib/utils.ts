@@ -27,9 +27,12 @@ export function formatDate(date: string | Date, pattern = "d 'de' MMMM, yyyy"): 
   return format(new Date(date), pattern, { locale: es })
 }
 
-/** Format a time (HH:mm) */
-export function formatTime(date: string | Date): string {
-  return format(new Date(date), 'HH:mm')
+/** Format a time as 12-hour AM/PM (e.g. "9:00 AM", "2:30 PM") */
+export function formatTime(date: string | Date | null | undefined): string {
+  if (!date) return ''
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return format(d, 'h:mm a')
 }
 
 /** Relative time (e.g. "hace 5 minutos") */

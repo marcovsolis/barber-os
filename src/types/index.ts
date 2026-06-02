@@ -59,6 +59,7 @@ export interface Barber {
   avatarUrl?: string
   color: string
   isActive: boolean
+  commissionPct: number   // 0–100 %
   createdAt: string
   updatedAt: string
   // Relations

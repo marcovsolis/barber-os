@@ -3,9 +3,9 @@
 --  PostgreSQL / Supabase
 -- ============================================================
 
--- Enable required extensions
-create extension if not exists "uuid-ossp";
-create extension if not exists "pgcrypto";
+-- Enable required extensions (optional, gen_random_uuid is used instead)
+create extension if not exists "uuid-ossp" schema extensions;
+create extension if not exists "pgcrypto" schema extensions;
 
 -- ── ENUMS ────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ create type expense_category as enum (
 -- ── SHOPS ────────────────────────────────────────────────────
 
 create table shops (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   name        text not null,
   slug        text not null unique,              -- used in public booking URL
   phone       text,
@@ -83,7 +83,7 @@ comment on table profiles is 'Extended user profiles with role and shop associat
 -- ── BARBERS ──────────────────────────────────────────────────
 
 create table barbers (
-  id             uuid primary key default uuid_generate_v4(),
+  id             uuid primary key default gen_random_uuid(),
   shop_id        uuid not null references shops(id) on delete cascade,
   profile_id     uuid references profiles(id) on delete set null,
   name           text not null,
@@ -98,7 +98,7 @@ create table barbers (
 -- ── BARBER SCHEDULES ─────────────────────────────────────────
 
 create table barber_schedules (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   barber_id   uuid not null references barbers(id) on delete cascade,
   day_of_week smallint not null check (day_of_week between 0 and 6), -- 0=Sun, 6=Sat
   start_time  time not null,
@@ -111,7 +111,7 @@ create table barber_schedules (
 -- ── SERVICES ─────────────────────────────────────────────────
 
 create table services (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   shop_id     uuid not null references shops(id) on delete cascade,
   name        text not null,
   description text,
@@ -125,7 +125,7 @@ create table services (
 -- ── CLIENTS ──────────────────────────────────────────────────
 
 create table clients (
-  id            uuid primary key default uuid_generate_v4(),
+  id            uuid primary key default gen_random_uuid(),
   shop_id       uuid not null references shops(id) on delete cascade,
   full_name     text not null,
   phone         text not null,
@@ -142,7 +142,7 @@ create table clients (
 -- ── APPOINTMENTS ─────────────────────────────────────────────
 
 create table appointments (
-  id             uuid primary key default uuid_generate_v4(),
+  id             uuid primary key default gen_random_uuid(),
   shop_id        uuid not null references shops(id) on delete cascade,
   barber_id      uuid not null references barbers(id),
   client_id      uuid references clients(id) on delete set null,
@@ -171,7 +171,7 @@ create index appointments_client_id_idx on appointments(client_id);
 -- ── PAYMENTS ─────────────────────────────────────────────────
 
 create table payments (
-  id               uuid primary key default uuid_generate_v4(),
+  id               uuid primary key default gen_random_uuid(),
   shop_id          uuid not null references shops(id) on delete cascade,
   appointment_id   uuid not null references appointments(id) on delete cascade,
   barber_id        uuid not null references barbers(id),
@@ -190,7 +190,7 @@ create index payments_shop_id_created_at_idx on payments(shop_id, created_at);
 -- ── INVENTORY ITEMS ──────────────────────────────────────────
 
 create table inventory_items (
-  id             uuid primary key default uuid_generate_v4(),
+  id             uuid primary key default gen_random_uuid(),
   shop_id        uuid not null references shops(id) on delete cascade,
   name           text not null,
   brand          text,
@@ -207,7 +207,7 @@ create table inventory_items (
 -- ── INVENTORY MOVEMENTS ──────────────────────────────────────
 
 create table inventory_movements (
-  id           uuid primary key default uuid_generate_v4(),
+  id           uuid primary key default gen_random_uuid(),
   shop_id      uuid not null references shops(id) on delete cascade,
   item_id      uuid not null references inventory_items(id) on delete cascade,
   quantity     numeric(10, 2) not null,   -- positive = in, negative = out
@@ -221,7 +221,7 @@ create table inventory_movements (
 -- ── EXPENSES ─────────────────────────────────────────────────
 
 create table expenses (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   shop_id     uuid not null references shops(id) on delete cascade,
   category    expense_category not null default 'other',
   description text not null,
